@@ -12,11 +12,13 @@
   "scripts": {
     "test": "vitest run test/unit",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "pretest": "[ \"$GIT_STUNTS_DOCKER\" = \"1\" ] || (echo '🚫 RUN IN DOCKER ONLY' && exit 1)"
   },
   "author": "James Ross <james@flyingrobots.dev>",
   "license": "Apache-2.0",
   "dependencies": {
+    "@git-stunts/plumbing": "file:../plumbing",
     "zod": "^3.24.1"
   },
   "devDependencies": {
