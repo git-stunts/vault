@@ -1,5 +1,5 @@
-import readline from 'node:readline';
 import VaultServiceError from '../errors/VaultServiceError.js';
+import { defaultRuntime } from '../runtime/index.js';
 
 /**
  * Domain service for managing secrets.
@@ -71,8 +71,9 @@ export default class VaultService {
    * @returns {string|null}
    */
   resolveSecret({ envKey, vaultTarget }) {
-    if (process.env[envKey]) {
-      return process.env[envKey];
+    const envValue = defaultRuntime.getEnv(envKey);
+    if (envValue) {
+      return envValue;
     }
     try {
       return this.getSecret(vaultTarget) || null;
@@ -94,39 +95,17 @@ export default class VaultService {
       return value;
     }
 
-    if (!process.stdin.isTTY) {
+    if (!defaultRuntime.isTTY()) {
       throw VaultServiceError.secretMissing(target);
     }
 
-    return new Promise((resolve, reject) => {
-      const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stderr,
-        terminal: true,
-      });
-      rl.stdoutMuted = true;
-      rl._writeToOutput = (stringToWrite) => {
-        rl.output.write(rl.stdoutMuted ? '*' : stringToWrite);
-      };
+    const answer = await defaultRuntime.promptSecret(promptMessage);
+    const trimmed = typeof answer === 'string' ? answer.trim() : '';
+    if (!trimmed) {
+      throw VaultServiceError.emptySecret();
+    }
 
-      rl.question(`${promptMessage}: `, (answer) => {
-        rl.stdoutMuted = false;
-        rl.close();
-        process.stderr.write('\n');
-
-        const trimmed = answer.trim();
-        if (!trimmed) {
-          reject(VaultServiceError.emptySecret());
-          return;
-        }
-
-        try {
-          this.setSecret(target, trimmed);
-          resolve(trimmed);
-        } catch (err) {
-          reject(err);
-        }
-      });
-    });
+    this.setSecret(target, trimmed);
+    return trimmed;
   }
 }

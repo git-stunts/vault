@@ -79,8 +79,8 @@ const runMultiRuntimeTests = async () => {
 
 const runLocalTests = async () => {
   const extraArgs = process.argv.slice(2);
-  const args = ['exec', 'vitest', 'run', 'test/unit', ...extraArgs];
-  const code = await runCommand('npm', args);
+    const args = ['exec', 'vitest', 'run', 'test/unit', ...extraArgs];
+    const code = await runCommand('npm', args);
   process.exitCode = code;
 };
 

@@ -8,6 +8,7 @@ import PlatformNotSupportedError from './src/domain/errors/PlatformNotSupportedE
 import SecretNotFoundError from './src/domain/errors/SecretNotFoundError.js';
 import { createBunKeychainAdapter } from './src/infrastructure/adapters/bun/index.js';
 import { createDenoKeychainAdapter } from './src/infrastructure/adapters/deno/index.js';
+import { defaultRuntime } from './src/runtime/index.js';
 
 const isNodeRuntime =
   typeof process !== 'undefined' &&
@@ -86,24 +87,15 @@ export default class Vault {
   }
 
   get isMac() {
-    if (typeof Deno !== 'undefined') {
-      return Deno.build.os === 'darwin';
-    }
-    return process.platform === 'darwin';
+    return defaultRuntime.getPlatform() === 'darwin';
   }
 
   get isLinux() {
-    if (typeof Deno !== 'undefined') {
-      return Deno.build.os === 'linux';
-    }
-    return process.platform === 'linux';
+    return defaultRuntime.getPlatform() === 'linux';
   }
 
   get isWindows() {
-    if (typeof Deno !== 'undefined') {
-      return Deno.build.os === 'windows';
-    }
-    return process.platform === 'win32';
+    return defaultRuntime.getPlatform() === 'win32';
   }
 
   getSecret({ target }) {
