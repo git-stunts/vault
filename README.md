@@ -1,12 +1,15 @@
 # @git-stunts/vault
 
+<img width="420" src="https://github.com/user-attachments/assets/aa623669-6269-48e8-83ef-66ffe9a46793" align="right" />
+
+
 A secure interface to OS-native keychains (macOS, Linux, Windows) for "Zero-Secret Architecture."
 
-## Why Vault?
+### Why Vault?
 
 Storing API keys or encryption secrets in `.env` files is a security risk. `vault` offloads this responsibility to the operating system's native secure storage. Your application never "owns" the secret—it simply requests it when needed.
 
-## Features
+### Features
 
 - **Cross-Platform**: Supports macOS Keychain, Linux Secret Service, and Windows Credential Manager.
 - **Zero-Secret**: No plain-text keys on disk.
