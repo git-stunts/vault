@@ -1,12 +1,8 @@
 import KeychainAdapter from '../KeychainAdapter.js';
 import NodeCommandRunner from './CommandRunner.js';
+import { getPlatform } from '../../utils/platform.js';
 
-const defaultPlatformGetter = () => {
-  if (typeof process !== 'undefined' && process && typeof process.platform === 'string') {
-    return process.platform;
-  }
-  return 'unknown';
-};
+const defaultPlatformGetter = getPlatform;
 
 export function createNodeKeychainAdapter({ account = 'git-stunts', commandRunner, platformGetter } = {}) {
   return new KeychainAdapter({

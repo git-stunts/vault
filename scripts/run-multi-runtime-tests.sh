@@ -23,6 +23,13 @@ SERVICES="node-test bun-test deno-test"
 
 $DOCKER_COMPOSE up --build --remove-orphans
 
+UP_EXIT=$?
+if [ "$UP_EXIT" -ne 0 ]; then
+  printf "❌ docker compose up failed (exit %s)\n" "$UP_EXIT"
+  $DOCKER_COMPOSE down
+  exit 1
+fi
+
 EXIT_CODE=0
 for service in $SERVICES; do
   if [ "$COMPOSE_MODE" = "v2" ]; then

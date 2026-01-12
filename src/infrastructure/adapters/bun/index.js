@@ -1,12 +1,8 @@
 import KeychainAdapter from '../KeychainAdapter.js';
 import BunCommandRunner from './CommandRunner.js';
+import { getPlatform } from '../../utils/platform.js';
 
-const defaultPlatformGetter = () => {
-  if (typeof process !== 'undefined' && process && typeof process.platform === 'string') {
-    return process.platform;
-  }
-  return 'unknown';
-};
+const defaultPlatformGetter = getPlatform;
 
 export function createBunKeychainAdapter({ account = 'git-stunts', commandRunner, platformGetter } = {}) {
   return new KeychainAdapter({

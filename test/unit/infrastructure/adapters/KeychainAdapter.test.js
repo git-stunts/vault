@@ -78,4 +78,39 @@ describe('KeychainAdapter', () => {
       );
     });
   });
+
+  describe('linux platform', () => {
+    beforeEach(() => {
+      adapter = new KeychainAdapter({
+        account: 'my-account',
+        commandRunner: runner,
+        platformGetter: () => 'linux'
+      });
+    });
+
+    it('stores secrets via secret-tool store', () => {
+      runner.run.mockReturnValue({ status: 0 });
+      const result = adapter.set('service', 'value');
+      expect(result).toBe(true);
+      expect(runner.run).toHaveBeenCalledWith(
+        'secret-tool',
+        ['store', '--label', 'service', 'service', 'service'],
+        expect.objectContaining({
+          input: 'value',
+          encoding: 'utf8',
+          stdio: ['pipe', 'ignore', 'inherit']
+        })
+      );
+    });
+
+    it('looks up secrets with secret-tool lookup', () => {
+      runner.run.mockReturnValue({ status: 0, stdout: 'secret' });
+      const secret = adapter.get('service');
+      expect(secret).toBe('secret');
+      expect(runner.run).toHaveBeenCalledWith(
+        'secret-tool',
+        ['lookup', 'service', 'service']
+      );
+    });
+  });
 });

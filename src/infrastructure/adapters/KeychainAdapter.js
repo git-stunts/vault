@@ -1,11 +1,7 @@
 import PlatformNotSupportedError from '../../domain/errors/PlatformNotSupportedError.js';
+import { getPlatform } from '../../utils/platform.js';
 
-const defaultPlatformGetter = () => {
-  if (typeof process !== 'undefined' && process && typeof process.platform === 'string') {
-    return process.platform;
-  }
-  return 'unknown';
-};
+const defaultPlatformGetter = getPlatform;
 
 export default class KeychainAdapter {
   constructor({ account = 'git-stunts', commandRunner, platformGetter } = {}) {
@@ -56,7 +52,7 @@ export default class KeychainAdapter {
           $c = Get-StoredCredential -Target ${psLiteral(target)} 
           if ($c -and $c.Password) { Write-Output $c.Password }
         }
-      } catch { }`;
+      } catch { exit 1 }`;
       return this._run('powershell', ['-NoProfile', '-Command', script]);
     }
 

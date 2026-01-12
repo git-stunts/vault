@@ -1,17 +1,4 @@
-const DECODER = new TextDecoder();
-
-const decode = (value) => {
-  if (typeof value === 'string') {
-    return value;
-  }
-  if (value instanceof Uint8Array) {
-    return DECODER.decode(value);
-  }
-  if (value instanceof ArrayBuffer) {
-    return DECODER.decode(new Uint8Array(value));
-  }
-  return undefined;
-};
+import { decodeValue } from '../shared/decode.js';
 
 export default class BunCommandRunner {
   constructor({ bun } = {}) {
@@ -41,8 +28,8 @@ export default class BunCommandRunner {
 
     return {
       status,
-      stdout: decode(result.stdout),
-      stderr: decode(result.stderr)
-    };
-  }
+    stdout: decodeValue(result.stdout),
+    stderr: decodeValue(result.stderr)
+  };
+}
 }

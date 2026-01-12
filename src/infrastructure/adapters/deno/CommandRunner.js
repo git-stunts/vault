@@ -1,24 +1,10 @@
-const ENCODER = new TextEncoder();
-const DECODER = new TextDecoder();
+import { decodeValue, encodeString } from '../shared/codec.js';
 
 const encodeInput = (input) => {
   if (typeof input === 'string') {
-    return ENCODER.encode(input);
+    return encodeString(input);
   }
   return input;
-};
-
-const decode = (value) => {
-  if (typeof value === 'string') {
-    return value;
-  }
-  if (value instanceof Uint8Array) {
-    return DECODER.decode(value);
-  }
-  if (value instanceof ArrayBuffer) {
-    return DECODER.decode(new Uint8Array(value));
-  }
-  return undefined;
 };
 
 const getGlobalDeno = () => {
@@ -30,11 +16,11 @@ const getGlobalDeno = () => {
 
 export default class DenoCommandRunner {
   constructor({ deno } = {}) {
-    this.deno = deno;
+    this.deno = deno ?? getGlobalDeno();
   }
 
   run(command, args = [], options = {}) {
-    const deno = this.deno ?? getGlobalDeno();
+    const deno = this.deno;
     if (typeof deno === 'undefined' || typeof deno.Command !== 'function') {
       throw new Error('Deno.Command is required for DenoCommandRunner');
     }
@@ -52,8 +38,8 @@ export default class DenoCommandRunner {
 
     return {
       status: result.code,
-      stdout: decode(result.stdout),
-      stderr: decode(result.stderr)
+      stdout: decodeValue(result.stdout),
+      stderr: decodeValue(result.stderr)
     };
   }
 }

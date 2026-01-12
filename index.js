@@ -31,7 +31,7 @@ export function createNodeKeychainAdapter(options) {
   return loadNodeAdapterModule().createNodeKeychainAdapter(options);
 }
 
-const detectAdapterFactory = ({ account }) => {
+const detectAdapter = ({ account }) => {
   if (typeof Bun !== 'undefined' && typeof Bun.spawnSync === 'function') {
     return createBunKeychainAdapter({ account });
   }
@@ -66,7 +66,7 @@ export default class Vault {
       throw new TypeError('adapterFactory must be a function');
     }
     const adapter =
-      adapterFactory ? adapterFactory({ account }) : detectAdapterFactory({ account });
+      adapterFactory ? adapterFactory({ account }) : detectAdapter({ account });
     this.service = new VaultService({ account, adapter });
   }
 

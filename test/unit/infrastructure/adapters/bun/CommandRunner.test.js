@@ -22,11 +22,22 @@ describe('BunCommandRunner', () => {
       stderr: 'error'
     });
 
-    const result = runner.run('cmd', ['arg'], { cwd: '/repo', env: { FOO: '1' } });
+    const result = runner.run(
+      'cmd',
+      ['arg'],
+      { cwd: '/repo', env: { FOO: '1' }, input: 'payload' }
+    );
 
     expect(bunMock.spawnSync).toHaveBeenCalledWith(
       ['cmd', 'arg'],
-      expect.objectContaining({ cwd: '/repo', env: { FOO: '1' } })
+      expect.objectContaining({
+        cwd: '/repo',
+        env: { FOO: '1' },
+        stdin: 'pipe',
+        stdout: 'pipe',
+        stderr: 'pipe',
+        input: 'payload'
+      })
     );
     expect(result.status).toBe(0);
     expect(result.stdout).toBe('ok');
