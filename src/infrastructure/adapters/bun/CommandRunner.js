@@ -1,4 +1,4 @@
-import { decodeValue } from '../shared/decode.js';
+import { decodeValue } from '../shared/codec.js';
 import CommandRunnerError from '../../../domain/errors/CommandRunnerError.js';
 
 export default class BunCommandRunner {
