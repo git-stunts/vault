@@ -14,6 +14,14 @@ const defaultPlatformGetter = () => {
   return 'unknown';
 };
 
+/**
+ * Build a Deno-compatible keychain adapter.
+ * @param {Object} options
+ * @param {string} [options.account]
+ * @param {CommandRunner} [options.commandRunner]
+ * @param {Function} [options.platformGetter]
+ * @returns {KeychainAdapter}
+ */
 export function createDenoKeychainAdapter({ account = 'git-stunts', commandRunner, platformGetter } = {}) {
   return new KeychainAdapter({
     account,

@@ -1,4 +1,5 @@
 import { decodeValue } from '../shared/decode.js';
+import CommandRunnerError from '../../../domain/errors/CommandRunnerError.js';
 
 export default class BunCommandRunner {
   constructor({ bun } = {}) {
@@ -7,7 +8,7 @@ export default class BunCommandRunner {
 
   run(command, args = [], options = {}) {
     if (!this.bun || typeof this.bun.spawnSync !== 'function') {
-      throw new Error('Bun.spawnSync is required for BunCommandRunner');
+      throw CommandRunnerError.missingSpawnSync('Bun');
     }
 
     const spawnArgs = [command, ...args];
@@ -28,8 +29,8 @@ export default class BunCommandRunner {
 
     return {
       status,
-    stdout: decodeValue(result.stdout),
-    stderr: decodeValue(result.stderr)
-  };
-}
+      stdout: decodeValue(result.stdout),
+      stderr: decodeValue(result.stderr)
+    };
+  }
 }

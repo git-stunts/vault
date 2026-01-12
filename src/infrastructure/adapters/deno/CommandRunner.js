@@ -1,4 +1,5 @@
 import { decodeValue, encodeString } from '../shared/codec.js';
+import CommandRunnerError from '../../../domain/errors/CommandRunnerError.js';
 
 const encodeInput = (input) => {
   if (typeof input === 'string') {
@@ -22,7 +23,7 @@ export default class DenoCommandRunner {
   run(command, args = [], options = {}) {
     const deno = this.deno;
     if (typeof deno === 'undefined' || typeof deno.Command !== 'function') {
-      throw new Error('Deno.Command is required for DenoCommandRunner');
+      throw CommandRunnerError.missingCommand();
     }
 
     const cmd = new deno.Command(command, {

@@ -1,4 +1,5 @@
 import readline from 'node:readline';
+import VaultServiceError from '../errors/VaultServiceError.js';
 
 /**
  * Domain service for managing secrets.
@@ -13,7 +14,7 @@ export default class VaultService {
     this.account = account;
 
     if (!adapter || typeof adapter.get !== 'function' || typeof adapter.set !== 'function' || typeof adapter.delete !== 'function') {
-      throw new Error('adapter implementing get/set/delete is required');
+      throw VaultServiceError.missingAdapter();
     }
 
     this.adapter = adapter;
@@ -26,7 +27,7 @@ export default class VaultService {
    */
   getSecret(target) {
     if (!target) {
-      throw new Error('target is required');
+      throw VaultServiceError.missingTarget();
     }
     return this.adapter.get(target);
   }
@@ -38,15 +39,15 @@ export default class VaultService {
    */
   setSecret(target, value) {
     if (!target) {
-      throw new Error('target is required');
+      throw VaultServiceError.missingTarget();
     }
     if (!value) {
-      throw new Error('value is required');
+      throw VaultServiceError.missingValue();
     }
     
     const success = this.adapter.set(target, value);
     if (!success) {
-      throw new Error(`Failed to store secret for ${target}`);
+      throw VaultServiceError.storeFailed(target);
     }
   }
 
@@ -57,7 +58,7 @@ export default class VaultService {
    */
   deleteSecret(target) {
     if (!target) {
-      throw new Error('target is required');
+      throw VaultServiceError.missingTarget();
     }
     return this.adapter.delete(target);
   }
@@ -94,7 +95,7 @@ export default class VaultService {
     }
 
     if (!process.stdin.isTTY) {
-      throw new Error(`Secret ${target} missing and no TTY for prompt`);
+      throw VaultServiceError.secretMissing(target);
     }
 
     return new Promise((resolve, reject) => {
@@ -115,7 +116,7 @@ export default class VaultService {
 
         const trimmed = answer.trim();
         if (!trimmed) {
-          reject(new Error('Secret cannot be empty'));
+          reject(VaultServiceError.emptySecret());
           return;
         }
 

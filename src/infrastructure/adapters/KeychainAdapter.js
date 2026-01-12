@@ -1,4 +1,5 @@
 import PlatformNotSupportedError from '../../domain/errors/PlatformNotSupportedError.js';
+import AdapterError from '../../domain/errors/AdapterError.js';
 import { getPlatform } from '../../utils/platform.js';
 
 const defaultPlatformGetter = getPlatform;
@@ -6,7 +7,7 @@ const defaultPlatformGetter = getPlatform;
 export default class KeychainAdapter {
   constructor({ account = 'git-stunts', commandRunner, platformGetter } = {}) {
     if (!commandRunner || typeof commandRunner.run !== 'function') {
-      throw new Error('commandRunner is required');
+      throw AdapterError.missingCommandRunner();
     }
 
     this.account = account;

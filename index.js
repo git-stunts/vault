@@ -27,10 +27,22 @@ const loadNodeAdapterModule = () => {
   return nodeRequire('./src/infrastructure/adapters/node/index.js');
 };
 
+/**
+ * Create a keychain adapter backed by the Node runtime.
+ * @param {Object} [options]
+ * @param {string} [options.account] - Account/scope for the secrets.
+ * @returns {KeychainAdapter}
+ */
 export function createNodeKeychainAdapter(options) {
   return loadNodeAdapterModule().createNodeKeychainAdapter(options);
 }
 
+/**
+ * Detect the environment and instantiate the matching keychain adapter.
+ * @param {Object} params
+ * @param {string} [params.account]
+ * @returns {KeychainAdapter}
+ */
 const detectAdapter = ({ account }) => {
   if (typeof Bun !== 'undefined' && typeof Bun.spawnSync === 'function') {
     return createBunKeychainAdapter({ account });
@@ -94,14 +106,34 @@ export default class Vault {
     this.service.setSecret(target, value);
   }
 
+  /**
+   * Remove the secret for the requested target.
+   * @param {Object} params
+   * @param {string} params.target
+   * @returns {boolean}
+   */
   deleteSecret({ target }) {
     return this.service.deleteSecret(target);
   }
 
+  /**
+   * Resolve a value from the vault or environment variables.
+   * @param {Object} params
+   * @param {string} params.envKey
+   * @param {string} params.vaultTarget
+   * @returns {string|undefined}
+   */
   resolveSecret({ envKey, vaultTarget }) {
     return this.service.resolveSecret({ envKey, vaultTarget });
   }
 
+  /**
+   * Ensure a secret exists, prompting if configured.
+   * @param {Object} params
+   * @param {string} params.target
+   * @param {string} [params.promptMessage]
+   * @returns {Promise<string>}
+   */
   async ensureSecret({ target, promptMessage }) {
     return this.service.ensureSecret({ target, promptMessage });
   }
