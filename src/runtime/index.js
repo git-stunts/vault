@@ -9,7 +9,7 @@ const nodePromptSecret = async (promptMessage) => {
     throw new Error('Node stdin is required for prompting secrets');
   }
   const { createInterface } = await import('node:readline');
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const label = getPromptLabel(promptMessage);
     const rl = createInterface({
       input: process.stdin,
@@ -20,8 +20,12 @@ const nodePromptSecret = async (promptMessage) => {
     rl._writeToOutput = function (stringToWrite) {
       this.output.write(this.stdoutMuted ? '*' : stringToWrite);
     };
+    rl.on('close', () => {
+      reject(new Error('Secret prompt was cancelled'));
+    });
     rl.question(`${label}: `, (answer) => {
       rl.stdoutMuted = false;
+      rl.removeAllListeners('close');
       rl.close();
       process.stderr.write('\n');
       resolve(answer);
@@ -30,12 +34,10 @@ const nodePromptSecret = async (promptMessage) => {
 };
 
 const denoPromptSecret = async (promptMessage) => {
-  if (typeof prompt !== 'function') {
-    throw new Error('Deno prompt API is not available for secret entry');
-  }
+  const { promptSecret } = await import('@std/cli/prompt/mod.ts');
   const label = getPromptLabel(promptMessage);
-  const answer = prompt(`${label}: `);
-  if (answer === null) {
+  const answer = await promptSecret({ message: `${label}: `, type: 'password' });
+  if (answer === null || typeof answer === 'undefined') {
     throw new Error('Secret prompt was cancelled by the user');
   }
   return answer;
@@ -52,9 +54,9 @@ const defaultEnvGetter = (key) => {
 };
 
 const defaultIsTTY = () => {
-  if (isDenoRuntime && typeof Deno.isatty === 'function' && typeof Deno.stdin?.rid === 'number') {
+  if (isDenoRuntime && typeof Deno.stdin?.isTerminal === 'function') {
     try {
-      return Deno.isatty(Deno.stdin.rid);
+      return Deno.stdin.isTerminal();
     } catch {
       return false;
     }

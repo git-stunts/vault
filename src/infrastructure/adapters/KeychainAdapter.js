@@ -24,7 +24,12 @@ export default class KeychainAdapter {
     if (!result || result.status !== 0) {
       return undefined;
     }
-    const stdout = result.stdout;
+    let stdout = result.stdout;
+    if (stdout instanceof Uint8Array) {
+      stdout = new TextDecoder().decode(stdout);
+    } else if (typeof Buffer !== 'undefined' && Buffer.isBuffer?.(stdout)) {
+      stdout = stdout.toString('utf8');
+    }
     return typeof stdout === 'string' ? stdout.trim() : undefined;
   }
 
@@ -48,7 +53,7 @@ export default class KeychainAdapter {
           Import-Module CredentialManager -ErrorAction Stop
           $c = Get-StoredCredential -Target ${psLiteral(target)} 
           if ($c -and $c.Password) { Write-Output $c.Password }
-        }
+        } else { exit 1 }
       } catch { exit 1 }`;
       return this._run('powershell', ['-NoProfile', '-Command', script]);
     }
