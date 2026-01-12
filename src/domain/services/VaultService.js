@@ -93,7 +93,7 @@ export default class VaultService {
       throw new Error(`Secret ${target} missing and no TTY for prompt`);
     }
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const rl = readline.createInterface({
         input: process.stdin,
         output: process.stderr,
@@ -108,12 +108,19 @@ export default class VaultService {
         rl.stdoutMuted = false;
         rl.close();
         process.stderr.write('\n');
+
         const trimmed = answer.trim();
         if (!trimmed) {
-          throw new Error('Secret cannot be empty');
+          reject(new Error('Secret cannot be empty'));
+          return;
         }
-        this.setSecret(target, trimmed);
-        resolve(trimmed);
+
+        try {
+          this.setSecret(target, trimmed);
+          resolve(trimmed);
+        } catch (err) {
+          reject(err);
+        }
       });
     });
   }

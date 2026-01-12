@@ -78,7 +78,7 @@ export default class KeychainAdapter {
         }
         Import-Module CredentialManager -ErrorAction Stop
         $pwd = ${psLiteral(value)}
-        New-StoredCredential -Target ${psLiteral(target)} -UserName '${this.account}' -Password $pwd -Persist CurrentUser | Out-Null
+        New-StoredCredential -Target ${psLiteral(target)} -UserName ${psLiteral(this.account)} -Password $pwd -Persist CurrentUser | Out-Null
       } catch { exit 1 }`;
       const res = spawnSync('powershell', ['-NoProfile', '-Command', script]);
       return res.status === 0;
