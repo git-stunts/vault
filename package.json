@@ -24,7 +24,7 @@
     "access": "public"
   },
   "scripts": {
-    "test": "sh -c 'if [ \"$GIT_STUNTS_DOCKER\" = \"1\" ]; then vitest run test/unit \"$@\"; else ./scripts/run-multi-runtime-tests.sh \"$@\"; fi' --",
+    "test": "node ./scripts/run-tests.js",
     "benchmark": "sh -c 'if [ \"$GIT_STUNTS_DOCKER\" = \"1\" ]; then vitest bench test/benchmark \"$@\"; else docker compose run --build --rm test npm run benchmark -- \"$@\"; fi' --",
     "lint": "eslint .",
     "format": "prettier --write .",

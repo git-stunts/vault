@@ -1,6 +1,18 @@
 FROM denoland/deno:2.6.3
 
-RUN apt-get update && apt-get install -y git nodejs npm && rm -rf /var/lib/apt/lists/*
+ARG NODE_VERSION=20.11.0
+ENV NODE_VERSION=${NODE_VERSION}
+RUN deno run --allow-net --allow-write --allow-env - <<'EOF'
+const version = Deno.env.get('NODE_VERSION');
+const url = `https://nodejs.org/dist/v${version}/node-v${version}-linux-arm64.tar.gz`;
+const response = await fetch(url);
+if (!response.ok) {
+  throw new Error(`Failed to download Node ${version}`);
+}
+const arrayBuffer = await response.arrayBuffer();
+await Deno.writeFile('/tmp/node.tar.gz', new Uint8Array(arrayBuffer));
+EOF
+RUN tar -xzf /tmp/node.tar.gz -C /usr/local --strip-components=1 && rm -f /tmp/node.tar.gz
 
 WORKDIR /app
 

@@ -56,9 +56,9 @@ const apiKey = vault.resolveSecret({
 
 ## Docker images
 
-- `Dockerfile` (Node) mirrors the `plumbing/Dockerfile.node` workflow and runs `npm test`.
+- `Dockerfile` (Node) mirrors the repository root workflow and runs `npm test`.
 - `Dockerfile.bun` copies both projects, installs with Bun, and runs `bun run vitest test/unit`.
-- `Dockerfile.deno` relies on `deno task test` defined in `deno.json`, which in turn proxies to the existing `npm` test stack.
+- `Dockerfile.deno` relies on `deno task test` defined in `deno.json`, which proxies back to the npm test stack via the shared script.
 
 ## License
 

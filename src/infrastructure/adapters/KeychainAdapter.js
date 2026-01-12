@@ -88,9 +88,7 @@ export default class KeychainAdapter {
     if (platform === 'win32') {
       const psLiteral = (val) => `'${val.replace(/'/g, "''")}'`;
       const script = `try {
-        if (!(Get-Module -ListAvailable -Name CredentialManager)) {
-          Install-Module -Name CredentialManager -Scope CurrentUser -Force -ErrorAction Stop
-        }
+        if (!(Get-Module -ListAvailable -Name CredentialManager)) { exit 1 }
         Import-Module CredentialManager -ErrorAction Stop
         $pwd = ${psLiteral(value)}
         New-StoredCredential -Target ${psLiteral(target)} -UserName ${psLiteral(this.account)} -Password $pwd -Persist CurrentUser | Out-Null

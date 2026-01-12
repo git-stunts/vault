@@ -6,9 +6,30 @@ import VaultService from './src/domain/services/VaultService.js';
 import VaultError from './src/domain/errors/VaultError.js';
 import PlatformNotSupportedError from './src/domain/errors/PlatformNotSupportedError.js';
 import SecretNotFoundError from './src/domain/errors/SecretNotFoundError.js';
-import { createNodeKeychainAdapter } from './src/infrastructure/adapters/node/index.js';
 import { createBunKeychainAdapter } from './src/infrastructure/adapters/bun/index.js';
 import { createDenoKeychainAdapter } from './src/infrastructure/adapters/deno/index.js';
+
+const isNodeRuntime =
+  typeof process !== 'undefined' &&
+  typeof process.versions?.node === 'string' &&
+  process.release?.name === 'node';
+
+let nodeRequire;
+if (isNodeRuntime) {
+  const { createRequire } = await import('module');
+  nodeRequire = createRequire(import.meta.url);
+}
+
+const loadNodeAdapterModule = () => {
+  if (!nodeRequire) {
+    throw new Error('Node runtime is required for the Node keychain adapter');
+  }
+  return nodeRequire('./src/infrastructure/adapters/node/index.js');
+};
+
+export function createNodeKeychainAdapter(options) {
+  return loadNodeAdapterModule().createNodeKeychainAdapter(options);
+}
 
 const detectAdapterFactory = ({ account }) => {
   if (typeof Bun !== 'undefined' && typeof Bun.spawnSync === 'function') {
@@ -38,10 +59,14 @@ export default class Vault {
   /**
    * @param {Object} options
    * @param {string} [options.account='git-stunts']
-   * @param {Object} [options.adapterFactory]
+   * @param {Function} [options.adapterFactory]
    */
   constructor({ account = 'git-stunts', adapterFactory } = {}) {
-    const adapter = adapterFactory?.({ account }) ?? detectAdapterFactory({ account });
+    if (adapterFactory != null && typeof adapterFactory !== 'function') {
+      throw new TypeError('adapterFactory must be a function');
+    }
+    const adapter =
+      adapterFactory ? adapterFactory({ account }) : detectAdapterFactory({ account });
     this.service = new VaultService({ account, adapter });
   }
 
