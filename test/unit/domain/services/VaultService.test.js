@@ -1,9 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import readline from 'node:readline';
 import VaultService from '../../../../src/domain/services/VaultService.js';
-import KeychainAdapter from '../../../../src/infrastructure/adapters/KeychainAdapter.js';
-
-vi.mock('../../../../src/infrastructure/adapters/KeychainAdapter.js');
 vi.mock('node:readline');
 
 describe('VaultService', () => {
@@ -12,7 +9,11 @@ describe('VaultService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockAdapter = new KeychainAdapter('test-account');
+    mockAdapter = {
+      get: vi.fn(),
+      set: vi.fn(),
+      delete: vi.fn()
+    };
     service = new VaultService({ account: 'test-account', adapter: mockAdapter });
   });
 

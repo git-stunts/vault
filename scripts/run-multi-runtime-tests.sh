@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# Ensure we run from the vault directory so compose file is resolved
+cd "$(dirname "$0")/.." || exit 1
+
+printf "🚀 Starting multi-runtime Docker tests for vault...\n"
+
+if docker compose version > /dev/null 2>&1; then
+  DOCKER_COMPOSE="docker compose"
+elif docker-compose version > /dev/null 2>&1; then
+  DOCKER_COMPOSE="docker-compose"
+else
+  printf "❌ docker compose not found\n"
+  exit 1
+fi
+
+printf "Using %s\n" "$DOCKER_COMPOSE"
+
+SERVICES="node-test bun-test deno-test"
+
+$DOCKER_COMPOSE up --build --remove-orphans
+
+EXIT_CODE=0
+for service in $SERVICES; do
+  STATUS=$($DOCKER_COMPOSE ps -a --format "{{.ExitCode}}" "$service")
+  if [ "$STATUS" != "0" ]; then
+    printf "❌ %s failed (exit %s)\n" "$service" "$STATUS"
+    EXIT_CODE=1
+  else
+    printf "✅ %s passed\n" "$service"
+  fi
+done
+
+$DOCKER_COMPOSE down
+
+exit $EXIT_CODE

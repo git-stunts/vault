@@ -1,5 +1,4 @@
 import readline from 'node:readline';
-import KeychainAdapter from '../../infrastructure/adapters/KeychainAdapter.js';
 
 /**
  * Domain service for managing secrets.
@@ -8,11 +7,16 @@ export default class VaultService {
   /**
    * @param {Object} options
    * @param {string} [options.account='git-stunts']
-   * @param {KeychainAdapter} [options.adapter] - Optional injected adapter.
+   * @param {Object} options.adapter - Adapter that fulfills the keychain port (get/set/delete).
    */
   constructor({ account = 'git-stunts', adapter } = {}) {
     this.account = account;
-    this.adapter = adapter || new KeychainAdapter(account);
+
+    if (!adapter || typeof adapter.get !== 'function' || typeof adapter.set !== 'function' || typeof adapter.delete !== 'function') {
+      throw new Error('adapter implementing get/set/delete is required');
+    }
+
+    this.adapter = adapter;
   }
 
   /**

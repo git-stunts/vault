@@ -6,12 +6,28 @@ import VaultService from './src/domain/services/VaultService.js';
 import VaultError from './src/domain/errors/VaultError.js';
 import PlatformNotSupportedError from './src/domain/errors/PlatformNotSupportedError.js';
 import SecretNotFoundError from './src/domain/errors/SecretNotFoundError.js';
+import { createNodeKeychainAdapter } from './src/infrastructure/adapters/node/index.js';
+import { createBunKeychainAdapter } from './src/infrastructure/adapters/bun/index.js';
+import { createDenoKeychainAdapter } from './src/infrastructure/adapters/deno/index.js';
+
+const detectAdapterFactory = ({ account }) => {
+  if (typeof Bun !== 'undefined' && typeof Bun.spawnSync === 'function') {
+    return createBunKeychainAdapter({ account });
+  }
+  if (typeof Deno !== 'undefined' && typeof Deno.Command === 'function') {
+    return createDenoKeychainAdapter({ account });
+  }
+  return createNodeKeychainAdapter({ account });
+};
 
 export {
   VaultService,
   VaultError,
   PlatformNotSupportedError,
-  SecretNotFoundError
+  SecretNotFoundError,
+  createNodeKeychainAdapter,
+  createBunKeychainAdapter,
+  createDenoKeychainAdapter
 };
 
 /**
@@ -22,9 +38,11 @@ export default class Vault {
   /**
    * @param {Object} options
    * @param {string} [options.account='git-stunts']
+   * @param {Object} [options.adapterFactory]
    */
-  constructor({ account = 'git-stunts' } = {}) {
-    this.service = new VaultService({ account });
+  constructor({ account = 'git-stunts', adapterFactory } = {}) {
+    const adapter = adapterFactory?.({ account }) ?? detectAdapterFactory({ account });
+    this.service = new VaultService({ account, adapter });
   }
 
   get account() {

@@ -7,10 +7,21 @@
   "exports": {
     ".": "./index.js",
     "./service": "./src/domain/services/VaultService.js",
-    "./errors": "./src/domain/errors/VaultError.js"
+    "./errors": "./src/domain/errors/VaultError.js",
+    "./adapters/keychain": "./src/infrastructure/adapters/KeychainAdapter.js",
+    "./adapters/node": "./src/infrastructure/adapters/node/index.js",
+    "./adapters/bun": "./src/infrastructure/adapters/bun/index.js",
+    "./adapters/deno": "./src/infrastructure/adapters/deno/index.js",
+    "./ports/command-runner": "./src/ports/CommandRunnerPort.js"
   },
+  "files": [
+    "index.js",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "test": "sh -c 'if [ \"$GIT_STUNTS_DOCKER\" = \"1\" ]; then vitest run test/unit \"$@\"; else docker compose run --build --rm test npm test -- \"$@\"; fi' --",
+    "test": "sh -c 'if [ \"$GIT_STUNTS_DOCKER\" = \"1\" ]; then vitest run test/unit \"$@\"; else ./scripts/run-multi-runtime-tests.sh \"$@\"; fi' --",
     "benchmark": "sh -c 'if [ \"$GIT_STUNTS_DOCKER\" = \"1\" ]; then vitest bench test/benchmark \"$@\"; else docker compose run --build --rm test npm run benchmark -- \"$@\"; fi' --",
     "lint": "eslint .",
     "format": "prettier --write .",
