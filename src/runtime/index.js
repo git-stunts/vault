@@ -36,7 +36,7 @@ const nodePromptSecret = async (promptMessage) => {
 const denoPromptSecret = async (promptMessage) => {
   const { promptSecret } = await import('@std/cli/prompt/mod.ts');
   const label = getPromptLabel(promptMessage);
-  const answer = await promptSecret({ message: `${label}: `, type: 'password' });
+  const answer = await promptSecret(`${label}: `, { mask: '*' });
   if (answer === null || typeof answer === 'undefined') {
     throw new Error('Secret prompt was cancelled by the user');
   }
