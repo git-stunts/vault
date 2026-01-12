@@ -14,9 +14,12 @@ const decode = (value) => {
 };
 
 export default class BunCommandRunner {
+  constructor({ bun } = {}) {
+    this.bun = bun ?? globalThis?.Bun;
+  }
+
   run(command, args = [], options = {}) {
-    const bun = globalThis?.Bun;
-    if (!bun || typeof bun.spawnSync !== 'function') {
+    if (!this.bun || typeof this.bun.spawnSync !== 'function') {
       throw new Error('Bun.spawnSync is required for BunCommandRunner');
     }
 
@@ -33,7 +36,7 @@ export default class BunCommandRunner {
       spawnOptions.input = options.input;
     }
 
-    const result = bun.spawnSync(spawnArgs, spawnOptions);
+    const result = this.bun.spawnSync(spawnArgs, spawnOptions);
     const status = typeof result.exitCode === 'number' ? result.exitCode : result.status;
 
     return {

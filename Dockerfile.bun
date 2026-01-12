@@ -5,4 +5,4 @@ COPY plumbing /plumbing
 COPY vault /app
 RUN bun install --ignore-scripts
 ENV GIT_STUNTS_DOCKER=1
-CMD ["bun", "run", "vitest", "test/unit"]
+CMD ["bun", "run", "vitest", "run", "test/unit"]

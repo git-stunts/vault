@@ -21,13 +21,25 @@ const decode = (value) => {
   return undefined;
 };
 
+const getGlobalDeno = () => {
+  if (typeof Deno !== 'undefined') {
+    return Deno;
+  }
+  return undefined;
+};
+
 export default class DenoCommandRunner {
+  constructor({ deno } = {}) {
+    this.deno = deno;
+  }
+
   run(command, args = [], options = {}) {
-    if (typeof Deno === 'undefined' || typeof Deno.Command !== 'function') {
+    const deno = this.deno ?? getGlobalDeno();
+    if (typeof deno === 'undefined' || typeof deno.Command !== 'function') {
       throw new Error('Deno.Command is required for DenoCommandRunner');
     }
 
-    const cmd = new Deno.Command(command, {
+    const cmd = new deno.Command(command, {
       args,
       cwd: options.cwd,
       env: options.env,

@@ -23,7 +23,11 @@ export default class KeychainAdapter {
   }
 
   _run(command, args = [], options = {}) {
-    const result = this.commandRunner.run(command, args, options);
+    const optionKeys = options ? Object.keys(options) : [];
+    const result =
+      optionKeys.length > 0
+        ? this.commandRunner.run(command, args, options)
+        : this.commandRunner.run(command, args);
     if (!result || result.status !== 0) {
       return undefined;
     }

@@ -1,11 +1,14 @@
 FROM denoland/deno:2.6.3
 
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y git nodejs npm && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY plumbing /plumbing
 COPY vault /app
+
+RUN rm -rf /app/node_modules
+RUN npm install --ignore-scripts
 
 ENV GIT_STUNTS_DOCKER=1
 CMD ["deno", "task", "test"]

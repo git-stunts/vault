@@ -20,6 +20,9 @@
     "README.md",
     "LICENSE"
   ],
+  "optionalDependencies": {
+    "@rollup/rollup-linux-arm64-gnu": "4.55.1"
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -42,7 +45,6 @@
     "prettier": "^3.4.2",
     "vitest": "^2.1.8"
   },
-
   "repository": {
     "type": "git",
     "url": "git+https://github.com/git-stunts/vault.git"
