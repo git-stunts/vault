@@ -1,0 +1,8 @@
+FROM oven/bun:1.3.4
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY plumbing /plumbing
+COPY vault /app
+RUN bun install --ignore-scripts
+ENV GIT_STUNTS_DOCKER=1
+CMD ["bun", "run", "vitest", "run", "test/unit"]

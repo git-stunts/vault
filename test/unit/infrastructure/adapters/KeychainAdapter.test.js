@@ -1,35 +1,34 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { spawnSync } from 'node:child_process';
 import KeychainAdapter from '../../../../src/infrastructure/adapters/KeychainAdapter.js';
-
-vi.mock('node:child_process', () => ({
-  spawnSync: vi.fn()
-}));
 
 describe('KeychainAdapter', () => {
   let adapter;
+  let runner;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    runner = { run: vi.fn() };
   });
 
   describe('win32 platform', () => {
     beforeEach(() => {
-      adapter = new KeychainAdapter('my-account');
-      vi.spyOn(adapter, 'platform', 'get').mockReturnValue('win32');
+      adapter = new KeychainAdapter({
+        account: 'my-account',
+        commandRunner: runner,
+        platformGetter: () => 'win32'
+      });
     });
 
-    it('escapes account and other values in set() PowerShell script', () => {
-      spawnSync.mockReturnValue({ status: 0 });
-      
+    it('escapes values in set() PowerShell script', () => {
+      runner.run.mockReturnValue({ status: 0 });
       const target = "my'target";
       const value = "my'password";
       adapter.account = "my'account";
-      
+
       adapter.set(target, value);
-      
-      expect(spawnSync).toHaveBeenCalledWith('powershell', expect.any(Array));
-      const args = spawnSync.mock.calls[0][1];
+
+      expect(runner.run).toHaveBeenCalledWith('powershell', expect.any(Array));
+      const args = runner.run.mock.calls[0][1];
       const script = args[2];
       expect(script).toContain("-Target 'my''target'");
       expect(script).toContain("-UserName 'my''account'");
@@ -37,44 +36,80 @@ describe('KeychainAdapter', () => {
     });
 
     it('escapes target in delete() PowerShell script', () => {
-      spawnSync.mockReturnValue({ status: 0 });
-      
+      runner.run.mockReturnValue({ status: 0 });
       const target = "my'target";
+
       adapter.delete(target);
-      
-      expect(spawnSync).toHaveBeenCalledWith('powershell', expect.any(Array));
-      const args = spawnSync.mock.calls[0][1];
-      const script = args[2];
+
+      expect(runner.run).toHaveBeenCalledWith('powershell', expect.any(Array));
+      const script = runner.run.mock.calls[0][1][2];
       expect(script).toContain("-Target 'my''target'");
     });
 
     it('escapes target in get() PowerShell script', () => {
-      spawnSync.mockReturnValue({ status: 0, stdout: 'password' });
-      
+      runner.run.mockReturnValue({ status: 0, stdout: 'password' });
       const target = "my'target";
+
       adapter.get(target);
-      
-      expect(spawnSync).toHaveBeenCalledWith('powershell', expect.any(Array), expect.any(Object));
-      const args = spawnSync.mock.calls[0][1];
-      const script = args[2];
+
+      expect(runner.run).toHaveBeenCalledWith('powershell', expect.any(Array));
+      const script = runner.run.mock.calls[0][1][2];
       expect(script).toContain("-Target 'my''target'");
     });
   });
 
   describe('darwin platform', () => {
     beforeEach(() => {
-      adapter = new KeychainAdapter('my-account');
-      vi.spyOn(adapter, 'platform', 'get').mockReturnValue('darwin');
+      adapter = new KeychainAdapter({
+        account: 'my-account',
+        commandRunner: runner,
+        platformGetter: () => 'darwin'
+      });
     });
 
     it('calls security command in get()', () => {
-      spawnSync.mockReturnValue({ status: 0, stdout: 'password' });
+      runner.run.mockReturnValue({ status: 0, stdout: ' password\n' });
       const result = adapter.get('my-target');
       expect(result).toBe('password');
-      expect(spawnSync).toHaveBeenCalledWith(
+      expect(runner.run).toHaveBeenCalledWith(
         'security',
         ['find-generic-password', '-a', 'my-account', '-s', 'my-target', '-w'],
-        expect.any(Object)
+        expect.objectContaining({ stdio: ['ignore', 'pipe', 'ignore'] })
+      );
+    });
+  });
+
+  describe('linux platform', () => {
+    beforeEach(() => {
+      adapter = new KeychainAdapter({
+        account: 'my-account',
+        commandRunner: runner,
+        platformGetter: () => 'linux'
+      });
+    });
+
+    it('stores secrets via secret-tool store', () => {
+      runner.run.mockReturnValue({ status: 0 });
+      const result = adapter.set('service', 'value');
+      expect(result).toBe(true);
+      expect(runner.run).toHaveBeenCalledWith(
+        'secret-tool',
+        ['store', '--label', 'service', 'service', 'service'],
+        expect.objectContaining({
+          input: 'value',
+          encoding: 'utf8',
+          stdio: ['pipe', 'ignore', 'inherit']
+        })
+      );
+    });
+
+    it('looks up secrets with secret-tool lookup', () => {
+      runner.run.mockReturnValue({ status: 0, stdout: 'secret' });
+      const secret = adapter.get('service');
+      expect(secret).toBe('secret');
+      expect(runner.run).toHaveBeenCalledWith(
+        'secret-tool',
+        ['lookup', 'service', 'service']
       );
     });
   });

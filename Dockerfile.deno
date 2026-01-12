@@ -1,0 +1,26 @@
+FROM denoland/deno:2.6.3@sha256:075c8d994cf1e44f10d98ea86f6693037e9c66eb83e9b5fa6a534147372de3fb
+
+ARG NODE_VERSION=20.19.6
+ENV NODE_VERSION=${NODE_VERSION}
+RUN deno run --allow-net --allow-write --allow-env - <<'EOF'
+const version = Deno.env.get('NODE_VERSION');
+const arch = Deno.build.arch === 'x86_64' ? 'x64' : 'arm64';
+const url = `https://nodejs.org/dist/v${version}/node-v${version}-linux-${arch}.tar.gz`;
+const response = await fetch(url);
+if (!response.ok) {
+  throw new Error(`Failed to download Node ${version}`);
+}
+const arrayBuffer = await response.arrayBuffer();
+await Deno.writeFile('/tmp/node.tar.gz', new Uint8Array(arrayBuffer));
+EOF
+RUN tar -xzf /tmp/node.tar.gz -C /usr/local --strip-components=1 && rm -f /tmp/node.tar.gz
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --ignore-scripts
+
+COPY . ./
+
+ENV GIT_STUNTS_DOCKER=1
+CMD ["deno", "task", "test"]

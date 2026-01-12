@@ -1,7 +1,21 @@
 services:
-  test:
+  node-test:
     build:
       context: ..
       dockerfile: vault/Dockerfile
+    environment:
+      - GIT_STUNTS_DOCKER=1
+
+  bun-test:
+    build:
+      context: ..
+      dockerfile: vault/Dockerfile.bun
+    environment:
+      - GIT_STUNTS_DOCKER=1
+
+  deno-test:
+    build:
+      context: ..
+      dockerfile: vault/Dockerfile.deno
     environment:
       - GIT_STUNTS_DOCKER=1

@@ -1,5 +1,5 @@
-import readline from 'node:readline';
-import KeychainAdapter from '../../infrastructure/adapters/KeychainAdapter.js';
+import VaultServiceError from '../errors/VaultServiceError.js';
+import { defaultRuntime } from '../runtime/index.js';
 
 /**
  * Domain service for managing secrets.
@@ -8,11 +8,16 @@ export default class VaultService {
   /**
    * @param {Object} options
    * @param {string} [options.account='git-stunts']
-   * @param {KeychainAdapter} [options.adapter] - Optional injected adapter.
+   * @param {Object} options.adapter - Adapter that fulfills the keychain port (get/set/delete).
    */
   constructor({ account = 'git-stunts', adapter } = {}) {
     this.account = account;
-    this.adapter = adapter || new KeychainAdapter(account);
+
+    if (!adapter || typeof adapter.get !== 'function' || typeof adapter.set !== 'function' || typeof adapter.delete !== 'function') {
+      throw VaultServiceError.missingAdapter();
+    }
+
+    this.adapter = adapter;
   }
 
   /**
@@ -22,7 +27,7 @@ export default class VaultService {
    */
   getSecret(target) {
     if (!target) {
-      throw new Error('target is required');
+      throw VaultServiceError.missingTarget();
     }
     return this.adapter.get(target);
   }
@@ -34,15 +39,15 @@ export default class VaultService {
    */
   setSecret(target, value) {
     if (!target) {
-      throw new Error('target is required');
+      throw VaultServiceError.missingTarget();
     }
     if (!value) {
-      throw new Error('value is required');
+      throw VaultServiceError.missingValue();
     }
     
     const success = this.adapter.set(target, value);
     if (!success) {
-      throw new Error(`Failed to store secret for ${target}`);
+      throw VaultServiceError.storeFailed(target);
     }
   }
 
@@ -53,7 +58,7 @@ export default class VaultService {
    */
   deleteSecret(target) {
     if (!target) {
-      throw new Error('target is required');
+      throw VaultServiceError.missingTarget();
     }
     return this.adapter.delete(target);
   }
@@ -66,8 +71,9 @@ export default class VaultService {
    * @returns {string|null}
    */
   resolveSecret({ envKey, vaultTarget }) {
-    if (process.env[envKey]) {
-      return process.env[envKey];
+    const envValue = defaultRuntime.getEnv(envKey);
+    if (envValue) {
+      return envValue;
     }
     try {
       return this.getSecret(vaultTarget) || null;
@@ -89,39 +95,17 @@ export default class VaultService {
       return value;
     }
 
-    if (!process.stdin.isTTY) {
-      throw new Error(`Secret ${target} missing and no TTY for prompt`);
+    if (!defaultRuntime.isTTY()) {
+      throw VaultServiceError.secretMissing(target);
     }
 
-    return new Promise((resolve, reject) => {
-      const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stderr,
-        terminal: true,
-      });
-      rl.stdoutMuted = true;
-      rl._writeToOutput = (stringToWrite) => {
-        rl.output.write(rl.stdoutMuted ? '*' : stringToWrite);
-      };
+    const answer = await defaultRuntime.promptSecret(promptMessage);
+    const trimmed = typeof answer === 'string' ? answer.trim() : '';
+    if (!trimmed) {
+      throw VaultServiceError.emptySecret();
+    }
 
-      rl.question(`${promptMessage}: `, (answer) => {
-        rl.stdoutMuted = false;
-        rl.close();
-        process.stderr.write('\n');
-
-        const trimmed = answer.trim();
-        if (!trimmed) {
-          reject(new Error('Secret cannot be empty'));
-          return;
-        }
-
-        try {
-          this.setSecret(target, trimmed);
-          resolve(trimmed);
-        } catch (err) {
-          reject(err);
-        }
-      });
-    });
+    this.setSecret(target, trimmed);
+    return trimmed;
   }
 }

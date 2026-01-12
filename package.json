@@ -1,16 +1,30 @@
 {
   "name": "@git-stunts/vault",
   "version": "1.0.0",
-  "description": "Git Stunts Lego Block: vault",
+  "description": "A secure interface to OS-native keychains (macOS, Linux, Windows) for \"Zero-Secret Architecture.\"",
   "type": "module",
   "main": "index.js",
   "exports": {
     ".": "./index.js",
     "./service": "./src/domain/services/VaultService.js",
-    "./errors": "./src/domain/errors/VaultError.js"
+    "./errors": "./src/domain/errors/VaultError.js",
+    "./adapters/keychain": "./src/infrastructure/adapters/KeychainAdapter.js",
+    "./adapters/node": "./src/infrastructure/adapters/node/index.js",
+    "./adapters/bun": "./src/infrastructure/adapters/bun/index.js",
+    "./adapters/deno": "./src/infrastructure/adapters/deno/index.js",
+    "./ports/command-runner": "./src/ports/CommandRunnerPort.js"
+  },
+  "files": [
+    "index.js",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
-    "test": "sh -c 'if [ \"$GIT_STUNTS_DOCKER\" = \"1\" ]; then vitest run test/unit \"$@\"; else docker compose run --build --rm test npm test -- \"$@\"; fi' --",
+    "test": "node ./scripts/run-tests.js",
     "benchmark": "sh -c 'if [ \"$GIT_STUNTS_DOCKER\" = \"1\" ]; then vitest bench test/benchmark \"$@\"; else docker compose run --build --rm test npm run benchmark -- \"$@\"; fi' --",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -20,12 +34,35 @@
   "author": "James Ross <james@flyingrobots.dev>",
   "license": "Apache-2.0",
   "dependencies": {
-    "zod": "^3.24.1"
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "eslint": "^9.17.0",
     "prettier": "^3.4.2",
     "vitest": "^2.1.8"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/git-stunts/vault.git"
+  },
+  "homepage": "https://github.com/git-stunts/vault#readme",
+  "bugs": {
+    "url": "https://github.com/git-stunts/vault/issues"
+  },
+  "keywords": [
+    "secrets",
+    "vault",
+    "keychain",
+    "credentials",
+    "bun",
+    "deno",
+    "automation"
+  ],
+  "engines": {
+    "node": ">=20.0.0",
+    "bun": ">=1.3.5",
+    "deno": ">=2.0.0"
+  },
+  "sideEffects": false
 }
