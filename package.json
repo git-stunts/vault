@@ -1,7 +1,7 @@
 {
   "name": "@git-stunts/vault",
   "version": "1.0.0",
-  "description": "Git Stunts Lego Block: vault",
+  "description": "A secure interface to OS-native keychains (macOS, Linux, Windows) for \"Zero-Secret Architecture.\"",
   "type": "module",
   "main": "index.js",
   "exports": {
@@ -20,6 +20,9 @@
     "README.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "sh -c 'if [ \"$GIT_STUNTS_DOCKER\" = \"1\" ]; then vitest run test/unit \"$@\"; else ./scripts/run-multi-runtime-tests.sh \"$@\"; fi' --",
     "benchmark": "sh -c 'if [ \"$GIT_STUNTS_DOCKER\" = \"1\" ]; then vitest bench test/benchmark \"$@\"; else docker compose run --build --rm test npm run benchmark -- \"$@\"; fi' --",
@@ -38,5 +41,29 @@
     "eslint": "^9.17.0",
     "prettier": "^3.4.2",
     "vitest": "^2.1.8"
-  }
+  },
+
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/git-stunts/vault.git"
+  },
+  "homepage": "https://github.com/git-stunts/vault#readme",
+  "bugs": {
+    "url": "https://github.com/git-stunts/vault/issues"
+  },
+  "keywords": [
+    "secrets",
+    "vault",
+    "keychain",
+    "credentials",
+    "bun",
+    "deno",
+    "automation"
+  ],
+  "engines": {
+    "node": ">=20.0.0",
+    "bun": ">=1.3.5",
+    "deno": ">=2.0.0"
+  },
+  "sideEffects": false
 }
