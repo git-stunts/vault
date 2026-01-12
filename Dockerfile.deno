@@ -17,7 +17,6 @@ RUN tar -xzf /tmp/node.tar.gz -C /usr/local --strip-components=1 && rm -f /tmp/n
 
 WORKDIR /app
 
-COPY plumbing /plumbing
 COPY vault /app
 
 RUN rm -rf /app/node_modules

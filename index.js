@@ -86,14 +86,23 @@ export default class Vault {
   }
 
   get isMac() {
+    if (typeof Deno !== 'undefined') {
+      return Deno.build.os === 'darwin';
+    }
     return process.platform === 'darwin';
   }
 
   get isLinux() {
+    if (typeof Deno !== 'undefined') {
+      return Deno.build.os === 'linux';
+    }
     return process.platform === 'linux';
   }
 
   get isWindows() {
+    if (typeof Deno !== 'undefined') {
+      return Deno.build.os === 'windows';
+    }
     return process.platform === 'win32';
   }
 

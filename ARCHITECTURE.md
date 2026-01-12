@@ -30,12 +30,13 @@ src/
 ├── domain/
 │   ├── errors/         # VaultError, etc.
 │   └── services/       # VaultService
-  └── infrastructure/
-      └── adapters/
-          ├── KeychainAdapter.js
-          ├── node/   # NodeCommandRunner, factories
-          ├── bun/    # BunCommandRunner, factories
-          └── deno/   # DenoCommandRunner, factories
+├── ports/              # CommandRunnerPort
+└── infrastructure/
+    └── adapters/
+        ├── KeychainAdapter.js
+        ├── node/       # NodeCommandRunner, factories
+        ├── bun/        # BunCommandRunner, factories
+        └── deno/       # DenoCommandRunner, factories
 ```
 
 ## 🔐 Security Principles

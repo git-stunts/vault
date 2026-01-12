@@ -44,7 +44,14 @@ const runMultiRuntimeTests = async () => {
   }
 
   const upArgs = [...docker.argsPrefix, 'up', '--build', '--remove-orphans'];
-  await runCommand(docker.command, upArgs);
+  const upCode = await runCommand(docker.command, upArgs);
+  if (upCode !== 0) {
+    console.error('❌ docker compose up failed', upCode);
+    const downArgs = [...docker.argsPrefix, 'down'];
+    spawnSync(docker.command, downArgs, { stdio: 'inherit' });
+    process.exitCode = upCode;
+    return;
+  }
 
   let exitCode = 0;
   for (const service of services) {
@@ -72,8 +79,8 @@ const runMultiRuntimeTests = async () => {
 
 const runLocalTests = async () => {
   const extraArgs = process.argv.slice(2);
-  const args = ['run', 'test/unit', ...extraArgs];
-  const code = await runCommand('vitest', args);
+  const args = ['exec', 'vitest', 'run', 'test/unit', ...extraArgs];
+  const code = await runCommand('npm', args);
   process.exitCode = code;
 };
 

@@ -14,7 +14,7 @@ export default class CommandRunnerError extends VaultError {
 
   static missingSpawnSync(runtime) {
     return new CommandRunnerError(
-      `${runtime}.spawnSync is required for BunCommandRunner`,
+      `${runtime}.spawnSync is required for ${runtime}CommandRunner`,
       'command-runner.missing-spawn-sync',
       { runtime }
     );
