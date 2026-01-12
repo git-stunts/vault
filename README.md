@@ -40,3 +40,9 @@ const apiKey = vault.resolveSecret({
   vaultTarget: 'api-key' 
 });
 ```
+
+## License
+
+Apache-2.0
+Copyright © 2026 [James Ross](https://github.com/flyingrobots)
+
