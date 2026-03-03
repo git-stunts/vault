@@ -1,5 +1,5 @@
 import VaultServiceError from '../errors/VaultServiceError.js';
-import { defaultRuntime } from '../runtime/index.js';
+import { defaultRuntime } from '../../runtime/index.js';
 
 /**
  * Domain service for managing secrets.

@@ -1,6 +1,6 @@
 import KeychainAdapter from '../KeychainAdapter.js';
 import NodeCommandRunner from './CommandRunner.js';
-import { getPlatform } from '../../utils/platform.js';
+import { getPlatform } from '../../../utils/platform.js';
 
 const defaultPlatformGetter = getPlatform;
 
