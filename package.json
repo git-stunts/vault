@@ -4,6 +4,9 @@
   "description": "A secure interface to OS-native keychains (macOS, Linux, Windows) for \"Zero-Secret Architecture.\"",
   "type": "module",
   "main": "index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": "./index.js",
     "./service": "./src/domain/services/VaultService.js",
