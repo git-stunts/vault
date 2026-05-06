@@ -1,69 +1,68 @@
 # @git-stunts/vault
 
-<img width="420" src="https://github.com/user-attachments/assets/aa623669-6269-48e8-83ef-66ffe9a46793" align="right" />
+[![npm version](https://img.shields.io/npm/v/@git-stunts/vault.svg)](https://www.npmjs.com/package/@git-stunts/vault)
+[![License](https://img.shields.io/npm/l/@git-stunts/vault.svg)](LICENSE)
 
+> **Industrial-Grade Interface to OS-Native Keychains.**
 
-A secure interface to OS-native keychains (macOS, Linux, Windows) for "Zero-Secret Architecture."
+`@git-stunts/vault` provides a secure, environment-agnostic abstraction for interacting with OS-level secret storage (macOS Keychain, Linux Secret Service, Windows Credential Manager). Designed for high-stakes CLI tools and industrial workflows.
 
-### Why Vault?
+## 📦 Key Features
 
-Storing API keys or encryption secrets in `.env` files is a security risk. `vault` offloads this responsibility to the operating system's native secure storage. Your application never "owns" the secret—it simply requests it when needed.
+- **Async-First API**: Modernized for v2.0, every secret operation is asynchronous and non-blocking.
+- **Multi-Runtime Support**: Native adapters for Node.js, Bun, and Deno with automatic environment detection.
+- **Hexagonal Architecture**: Strict separation between secret management logic and platform-specific implementations.
+- **Interactive Promotion**: Built-in support for TTY prompting if a secret is missing from the vault.
+- **Security by Default**: Uses native platform binaries (security, dbus-send, cmdkey) to avoid heavy native dependencies.
 
-### Features
+## 🚀 Quick Start
 
-- **Cross-Platform**: Supports macOS Keychain, Linux Secret Service, and Windows Credential Manager.
-- **Zero-Secret**: No plain-text keys on disk.
-- **Interactive**: Can prompt the user for missing secrets and store them automatically.
-
-## Requirements
-
-- **macOS**: Works out of the box (uses `security`).
-- **Linux**: Requires `libsecret` (e.g., `sudo apt install libsecret-tools`).
-- **Windows**: Requires the `CredentialManager` PowerShell module.
-
-## Runtime-specific adapters
-
-- **Node (default)**: `Vault` auto-detects Bun and Deno globals and falls back to the Node adapter when neither is present.
-- **Bun**: Import `createBunKeychainAdapter` (or rely on the auto-detection) to execute commands with `Bun.spawnSync` when running under Bun.
-- **Deno**: Import `createDenoKeychainAdapter` and run via `Deno.Command`. See `deno.json` and `Dockerfile.deno` for a working setup.
-
-The `plumbing/` folder contains the reference Dockerfiles for each runtime (`Dockerfile.bun`, `Dockerfile.deno`, etc.), so you can see how the ports are wired together in an end-to-end image.
-
-## Docker-based tests
-
-- `npm test` runs `scripts/run-multi-runtime-tests.sh`, which in turn brings up the `node-test`, `bun-test`, and `deno-test` containers defined in `docker-compose.yml`.
-- Each container uses the respective Dockerfile (`Dockerfile`, `Dockerfile.bun`, `Dockerfile.deno`) so you can reproduce the same setup locally or in CI.
-
-## Usage
+### Basic Secret Management
 
 ```javascript
 import Vault from '@git-stunts/vault';
 
 const vault = new Vault({ account: 'my-app' });
 
-// Get a secret (returns undefined if missing)
-const key = vault.getSecret({ target: 'CHUNK_ENC_KEY' });
+// Store a secret (Async)
+await vault.setSecret({ target: 'API_KEY', value: 'sk_live_123' });
 
-// Ensure a secret exists (prompts user if missing)
-const secret = await vault.ensureSecret({ 
-  target: 'API_TOKEN', 
-  promptMessage: 'Enter your API Token' 
-});
+// Retrieve a secret (Async)
+const key = await vault.getSecret({ target: 'API_KEY' });
+```
 
-// Resolve with Env Var priority
-const apiKey = vault.resolveSecret({ 
-  envKey: 'MY_API_KEY', 
-  vaultTarget: 'api-key' 
+### Smart Resolution
+
+Resolve a secret by checking environment variables first, falling back to the OS vault.
+
+```javascript
+const secret = await vault.resolveSecret({
+  envKey: 'MY_APP_SECRET',
+  vaultTarget: 'MASTER_KEY'
 });
 ```
 
-## Docker images
+## 🛡️ Requirements
 
-- `Dockerfile` (Node) mirrors the repository root workflow and runs `npm test`.
-- `Dockerfile.bun` copies both projects, installs with Bun, and runs `bun run vitest test/unit`.
-- `Dockerfile.deno` relies on `deno task test` defined in `deno.json`, which proxies back to the npm test stack via the shared script.
+- **Node.js**: >= 20.0.0
+- **Bun**: >= 1.3.5
+- **Deno**: >= 2.0.0
+- **System**: macOS, Linux (with `libsecret` / `dbus`), or Windows.
 
-## License
+## 📖 Documentation
+
+- [**Standard Guide**](./GUIDE.md) - Configuration, adapters, and TTY prompting.
+- [**Architecture**](./ARCHITECTURE.md) - Deep dive into the port/adapter model.
+- [**Contributing**](./CONTRIBUTING.md) - Guidelines for adding new platform adapters.
+
+## 🧪 Testing
+
+This project requires OS-level interaction. Tests should be run in isolated environments where possible.
+
+```bash
+npm test
+```
+
+## 📄 License
 
 Apache-2.0
-Copyright © 2026 [James Ross](https://github.com/flyingrobots)

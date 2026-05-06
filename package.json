@@ -1,6 +1,6 @@
 {
   "name": "@git-stunts/vault",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "A secure interface to OS-native keychains (macOS, Linux, Windows) for \"Zero-Secret Architecture.\"",
   "type": "module",
   "main": "index.js",

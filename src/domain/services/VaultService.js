@@ -23,21 +23,22 @@ export default class VaultService {
   /**
    * Retrieves a secret.
    * @param {string} target
-   * @returns {string|undefined}
+   * @returns {Promise<string|undefined>}
    */
-  getSecret(target) {
+  async getSecret(target) {
     if (!target) {
       throw VaultServiceError.missingTarget();
     }
-    return this.adapter.get(target);
+    return await this.adapter.get(target);
   }
 
   /**
    * Stores a secret.
    * @param {string} target
    * @param {string} value
+   * @returns {Promise<void>}
    */
-  setSecret(target, value) {
+  async setSecret(target, value) {
     if (!target) {
       throw VaultServiceError.missingTarget();
     }
@@ -45,7 +46,7 @@ export default class VaultService {
       throw VaultServiceError.missingValue();
     }
     
-    const success = this.adapter.set(target, value);
+    const success = await this.adapter.set(target, value);
     if (!success) {
       throw VaultServiceError.storeFailed(target);
     }
@@ -54,13 +55,13 @@ export default class VaultService {
   /**
    * Deletes a secret.
    * @param {string} target
-   * @returns {boolean}
+   * @returns {Promise<boolean>}
    */
-  deleteSecret(target) {
+  async deleteSecret(target) {
     if (!target) {
       throw VaultServiceError.missingTarget();
     }
-    return this.adapter.delete(target);
+    return await this.adapter.delete(target);
   }
 
   /**
@@ -68,15 +69,15 @@ export default class VaultService {
    * @param {Object} params
    * @param {string} params.envKey
    * @param {string} params.vaultTarget
-   * @returns {string|null}
+   * @returns {Promise<string|null>}
    */
-  resolveSecret({ envKey, vaultTarget }) {
+  async resolveSecret({ envKey, vaultTarget }) {
     const envValue = defaultRuntime.getEnv(envKey);
     if (envValue) {
       return envValue;
     }
     try {
-      return this.getSecret(vaultTarget) || null;
+      return (await this.getSecret(vaultTarget)) || null;
     } catch {
       return null;
     }
@@ -90,7 +91,7 @@ export default class VaultService {
    * @returns {Promise<string>}
    */
   async ensureSecret({ target, promptMessage }) {
-    const value = this.getSecret(target);
+    const value = await this.getSecret(target);
     if (value) {
       return value;
     }
@@ -105,7 +106,7 @@ export default class VaultService {
       throw VaultServiceError.emptySecret();
     }
 
-    this.setSecret(target, trimmed);
+    await this.setSecret(target, trimmed);
     return trimmed;
   }
 }

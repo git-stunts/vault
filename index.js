@@ -98,22 +98,22 @@ export default class Vault {
     return defaultRuntime.getPlatform() === 'win32';
   }
 
-  getSecret({ target }) {
-    return this.service.getSecret(target);
+  async getSecret({ target }) {
+    return await this.service.getSecret(target);
   }
 
-  setSecret({ target, value }) {
-    this.service.setSecret(target, value);
+  async setSecret({ target, value }) {
+    await this.service.setSecret(target, value);
   }
 
   /**
    * Remove the secret for the requested target.
    * @param {Object} params
    * @param {string} params.target
-   * @returns {boolean}
+   * @returns {Promise<boolean>}
    */
-  deleteSecret({ target }) {
-    return this.service.deleteSecret(target);
+  async deleteSecret({ target }) {
+    return await this.service.deleteSecret(target);
   }
 
   /**
@@ -121,10 +121,10 @@ export default class Vault {
    * @param {Object} params
    * @param {string} params.envKey
    * @param {string} params.vaultTarget
-   * @returns {string|undefined}
+   * @returns {Promise<string|undefined>}
    */
-  resolveSecret({ envKey, vaultTarget }) {
-    return this.service.resolveSecret({ envKey, vaultTarget });
+  async resolveSecret({ envKey, vaultTarget }) {
+    return await this.service.resolveSecret({ envKey, vaultTarget });
   }
 
   /**
